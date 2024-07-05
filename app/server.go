@@ -22,27 +22,25 @@ func main() {
 	defer serve.Close()
 
 	fmt.Println("Listening on port 6379")
-
 	conn, err := serve.Accept()
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
 	defer conn.Close()
+
 	for {
-		buf := make([]byte, 128)
-		_, err = conn.Read(buf)
+
 		if err != nil {
 			fmt.Println(err.Error())
-			os.Exit(1)
+			continue
 		}
 
-		_, err = conn.Write([]byte("+PONG\r\n"))
+		buf := make([]byte, 1024)
+		d, err := conn.Read(buf)
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
+		fmt.Println(d)
+
+		conn.Write([]byte("+PONG\r\n"))
 	}
 
 }
