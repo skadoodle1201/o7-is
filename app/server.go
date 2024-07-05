@@ -30,18 +30,19 @@ func main() {
 	}
 
 	defer conn.Close()
+	for {
+		buf := make([]byte, 128)
+		_, err = conn.Read(buf)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
 
-	buf := make([]byte, 128)
-	_, err = conn.Read(buf)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	_, err = conn.Write([]byte("+PONG\r\n"))
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		_, err = conn.Write([]byte("+PONG\r\n"))
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
 	}
 
 }
