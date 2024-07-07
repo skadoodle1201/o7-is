@@ -61,19 +61,30 @@ func handleConnection(conn net.Conn) {
 			break
 		}
 		command, ok := arr[0].(tools.BulkString)
-		fmt.Println(arr[0])
 		if !ok {
 			fmt.Errorf("command item should be string: %+v", arr[0])
 			return
 		}
 		args := tools.Array{}
-		fmt.Println(args)
 		if len(arr) > 1 {
 			args = arr[1:]
 		}
 		fmt.Printf("Processing %s command with following args %+v", command.Value, args)
+
+		var resMessage string
+		switch command.Value {
+		case "PING":
+			{
+				resMessage = "+PONG\r\n"
+			}
+		case "ECHO":
+			{
+				echoed, _ := args[0].(tools.BulkString)
+				resMessage = fmt.Sprintf("+%v\r\n", echoed.Value)
+			}
+		}
 		// Send a response back to the client
-		_, err = conn.Write([]byte("+PONG\r\n"))
+		_, err = conn.Write([]byte(resMessage))
 		if err != nil {
 			fmt.Println("Error writing:", err.Error())
 			break
