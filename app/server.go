@@ -2,20 +2,16 @@ package main
 
 import (
 	"fmt"
-
-	// Uncomment this block to pass the first stage
 	"net"
 	"os"
 
+	"github.com/codecrafters-io/redis-starter-go/internal/commands"
 	"github.com/codecrafters-io/redis-starter-go/internal/tools"
 )
 
 func main() {
-	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	fmt.Println("Logs from your program will appear here!")
 
-	// Uncomment this block to pass the first stage
-	//
 	serve, err := net.Listen("tcp", "0.0.0.0:6379")
 	if err != nil {
 		fmt.Println("Failed to bind to port 6379")
@@ -38,56 +34,39 @@ func main() {
 
 }
 
-func handleConnection(conn net.Conn) {
+func handleConnection(conn net.Conn) (err error) {
 	defer conn.Close()
 	var buf = make([]byte, 128)
 	for {
 		count, err := conn.Read(buf)
 		if err != nil {
-			fmt.Println("Error reading:", err.Error())
-			break
+			return fmt.Errorf("Error reading: %v", err.Error())
 		}
 		// Print the received message
 		readBuf := buf[:count]
 		parsedData, data, err := tools.Parse(readBuf)
 		// fmt.Print("Message received:", parsedData)
 		if len(data) != 0 {
-			fmt.Errorf("not all data are processed, data left: %b", data)
-			break
+			return fmt.Errorf("not all data are processed, data left: %b", data)
 		}
 		arr, ok := parsedData.(tools.Array)
 		if !ok {
-			fmt.Errorf("parsed command data should be array")
-			break
+			return fmt.Errorf("parsed command data should be array")
 		}
-		command, ok := arr[0].(tools.BulkString)
+		operation, ok := arr[0].(tools.BulkString)
 		if !ok {
-			fmt.Errorf("command item should be string: %+v", arr[0])
-			return
+			return fmt.Errorf("operation item should be string: %+v", arr[0])
 		}
 		args := tools.Array{}
 		if len(arr) > 1 {
 			args = arr[1:]
 		}
-		fmt.Printf("Processing %s command with following args %+v", command.Value, args)
+		fmt.Printf("Processing %s operation with following args %+v", operation.Value, args)
 
-		var resMessage string
-		switch command.Value {
-		case "PING":
-			{
-				resMessage = "+PONG\r\n"
-			}
-		case "ECHO":
-			{
-				echoed, _ := args[0].(tools.BulkString)
-				resMessage = fmt.Sprintf("+%v\r\n", echoed.Value)
-			}
-		}
-		// Send a response back to the client
+		resMessage := commands.RedisCommands(operation.Value, args)
 		_, err = conn.Write([]byte(resMessage))
 		if err != nil {
-			fmt.Println("Error writing:", err.Error())
-			break
+			return fmt.Errorf("Error writing: %v", err.Error())
 		}
 	}
 
