@@ -3,28 +3,43 @@ package commands
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/codecrafters-io/redis-starter-go/internal/tools"
 )
 
-var SetStore = map[string]string{}
+type DataStore struct {
+	value    string
+	expiry   time.Time
+	createOn time.Time
+}
+
+var SetStore = map[string]dataStore{}
 var SetStoreMux = sync.RWMutex{}
 
 func SetCommand(args tools.Array) (string, error) {
+	_, expiryTime := "", time.Time{}
 	var err error
 	var message string
-	if len(args) != 2 {
+	if len(args) != 2 || len(args) != 4 {
 		err = fmt.Errorf("Incorrect Input :: %v", args)
 		return message, err
 	}
 	key, okKey := args[0].(tools.BulkString)
 	value, okValue := args[1].(tools.BulkString)
+
 	if !okKey || !okValue {
 		err = fmt.Errorf("Incorrect Input :: %v", args[0])
 		return message, err
 	}
+	now :=
+		time.Now()
 	SetStoreMux.Lock()
-	SetStore[key.Value] = value.Value
+	SetStore[key.Value] = &DataStore{
+		value:    value.Value,
+		expiry:   now,
+		createOn: now,
+	}
 	SetStoreMux.Unlock()
 
 	message = tools.SimpleString("OK").Encode()

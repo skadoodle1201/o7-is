@@ -2,11 +2,13 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/codecrafters-io/redis-starter-go/internal/tools"
 )
 
 func RedisCommands(command string, args tools.Array) string {
+	command = strings.ToUpper(command)
 	switch command {
 	case "PING":
 		{
