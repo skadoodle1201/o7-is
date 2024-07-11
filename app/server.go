@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 
 	"github.com/codecrafters-io/redis-starter-go/internal/commands"
 	"github.com/codecrafters-io/redis-starter-go/internal/tools"
@@ -11,16 +13,17 @@ import (
 
 func main() {
 	fmt.Println("Logs from your program will appear here!")
-
-	serve, err := net.Listen("tcp", "0.0.0.0:6379")
+	port := flag.Int("port", 6379, "The port on which the Redis server listens")
+	flag.Parse()
+	serve, err := net.Listen("tcp", "0.0.0.0:"+strconv.Itoa(*port))
 	if err != nil {
-		fmt.Println("Failed to bind to port 6379")
+		fmt.Println("Failed to bind to port ", *port)
 		os.Exit(1)
 	}
 
 	defer serve.Close()
 
-	fmt.Println("Listening on port 6379")
+	fmt.Println("Listening on port ", *port)
 
 	for {
 		conn, err := serve.Accept()
