@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -14,14 +16,15 @@ type DataStore struct {
 	createOn time.Time
 }
 
-var SetStore = map[string]dataStore{}
+var SetStore = map[string]*DataStore{}
 var SetStoreMux = sync.RWMutex{}
 
 func SetCommand(args tools.Array) (string, error) {
 	_, expiryTime := "", time.Time{}
 	var err error
 	var message string
-	if len(args) != 2 || len(args) != 4 {
+	if len(args) != 2 && len(args) != 4 {
+		fmt.Println("\n Failed at length \n", len(args))
 		err = fmt.Errorf("Incorrect Input :: %v", args)
 		return message, err
 	}
@@ -29,15 +32,44 @@ func SetCommand(args tools.Array) (string, error) {
 	value, okValue := args[1].(tools.BulkString)
 
 	if !okKey || !okValue {
+		fmt.Println("\n Failed at Key Val \n", len(args))
 		err = fmt.Errorf("Incorrect Input :: %v", args[0])
 		return message, err
 	}
 	now :=
 		time.Now()
 	SetStoreMux.Lock()
+	if len(args) == 4 {
+		typeEx, okTypeEx := args[2].(tools.BulkString)
+		exVal, okExVal := args[3].(tools.BulkString)
+		if !okTypeEx || !okExVal {
+			fmt.Println("\n Failed at Time \n", len(args))
+
+			err = fmt.Errorf("Incorrect Input :: %v %v", args[2], args[3])
+			return message, err
+		}
+		timeToExpire, convertErr := strconv.Atoi(exVal.Value)
+		if convertErr != nil {
+			err = fmt.Errorf("Incorrect Convert Time %v %v", args[2], args[3])
+			return message, err
+		}
+		var typeTime string = strings.ToUpper(typeEx.Value)
+		switch typeTime {
+		case "PX":
+			{
+				expiryTime = now.Add(time.Millisecond * time.Duration(timeToExpire))
+			}
+		case "EX":
+			{
+				expiryTime = now.Add(time.Second * time.Duration(timeToExpire))
+			}
+		}
+
+	}
+
 	SetStore[key.Value] = &DataStore{
 		value:    value.Value,
-		expiry:   now,
+		expiry:   expiryTime,
 		createOn: now,
 	}
 	SetStoreMux.Unlock()
@@ -60,12 +92,22 @@ func GetCommand(args tools.Array) (string, error) {
 	}
 	SetStoreMux.RLock()
 	val, ok := SetStore[key.Value]
-	SetStoreMux.RUnlock()
 	if !ok {
-		message = tools.SimpleString("$-1\r\n").Encode()
+		message = "$-1\r\n"
 		return message, err
 	}
+	now := time.Now()
+	fmt.Println("IS ZERO:: ", val.expiry.IsZero())
+	if !val.expiry.IsZero() && now.After(val.expiry) {
+		fmt.Printf("\n %v %v \n", now.After(val.expiry), val.expiry)
 
-	message = tools.SimpleString(val).Encode()
+		delete(SetStore, key.Value)
+		message = "$-1\r\n"
+
+		return message, err
+	}
+	SetStoreMux.RUnlock()
+
+	message = tools.SimpleString(val.value).Encode()
 	return message, err
 }
