@@ -47,6 +47,11 @@ func RedisCommands(command string, args tools.Array, role string) string {
 			return message
 
 		}
+	case "REPLCONF":
+		{
+			message := tools.SimpleString("OK").Encode()
+			return message
+		}
 	default:
 		{
 			return fmt.Sprintf("-ERR Invalid Operation %v%s", command, tools.CLRF)

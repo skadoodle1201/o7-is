@@ -8,32 +8,24 @@ import (
 	"strconv"
 
 	"github.com/codecrafters-io/redis-starter-go/internal/commands"
+	serverhelpers "github.com/codecrafters-io/redis-starter-go/internal/serverHelpers"
 	"github.com/codecrafters-io/redis-starter-go/internal/tools"
 )
 
-type ServerConfig struct {
-	port     int64
-	hostName string
-}
-
-var masterServerConf = ServerConfig{
-	port:     6379,
-	hostName: "0.0.0.0",
-}
-
 func main() {
 	fmt.Println("Logs from your program will appear here!")
-	port := flag.Int("port", 6379, "The port on which the Redis server listens")
-	role := flag.String("replicaof", "master", "The role redis server is running on")
+	port := flag.Int("port", int(tools.MasterPortGetter()), "The port on which the Redis server listens")
+	role := flag.String("replicaof", tools.MASTER_ROLE, "The role redis server is running on")
 	flag.Parse()
-	serve, err := net.Listen("tcp", "0.0.0.0:"+strconv.Itoa(*port))
+	serve, err := net.Listen("tcp", tools.MasterHostGetter()+":"+strconv.Itoa(*port))
 	if err != nil {
+
 		fmt.Println("Failed to bind to port ", *port)
 		os.Exit(1)
 	}
 
-	if *role != "master" {
-		SendHandshake(masterServerConf)
+	if *role != tools.MASTER_ROLE {
+		serverhelpers.SendHandshakePing(tools.MasterPortGetter(), tools.MasterHostGetter())
 	}
 
 	defer serve.Close()
@@ -87,14 +79,4 @@ func handleConnection(conn net.Conn, role string) (err error) {
 		}
 	}
 
-}
-
-func SendHandshake(serverConfig ServerConfig) (err error) {
-	address := fmt.Sprintf("%s:%d", serverConfig.hostName, serverConfig.port)
-	conn, err := net.Dial("tcp", address)
-	if err != nil {
-		return fmt.Errorf("Error HandShake With Master")
-	}
-	_, err = conn.Write([]byte("*1\r\n$4\r\nping\r\n"))
-	return err
 }
