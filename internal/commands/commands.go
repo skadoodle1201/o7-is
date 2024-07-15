@@ -52,6 +52,12 @@ func RedisCommands(command string, args tools.Array, role string) string {
 			message := tools.SimpleString("OK").Encode()
 			return message
 		}
+
+	case "PSYNC":
+		{
+			message := tools.SimpleString("FULLRESYNC <REPL_ID> 0").Encode()
+			return message
+		}
 	default:
 		{
 			return fmt.Sprintf("-ERR Invalid Operation %v%s", command, tools.CLRF)

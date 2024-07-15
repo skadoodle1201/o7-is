@@ -13,11 +13,12 @@ func InfoCommand(args tools.Array, role string) (message string, err error) {
 	}
 	_, okVal := args[0].(tools.BulkString)
 
+	fmt.Println(role)
+
 	if !okVal {
 		err = fmt.Errorf("Invalid Input %v", args)
 		return message, err
 	}
-
 	roleVal := "master"
 	if role != "master" {
 		roleVal = "slave"

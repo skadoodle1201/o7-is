@@ -25,7 +25,7 @@ func main() {
 	}
 
 	if *role != tools.MASTER_ROLE {
-		serverhelpers.SendHandshakePing(tools.MasterPortGetter(), tools.MasterHostGetter())
+		go serverhelpers.SendHandshakePing(tools.MasterPortGetter(), tools.MasterHostGetter())
 	}
 
 	defer serve.Close()
