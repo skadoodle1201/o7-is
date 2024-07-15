@@ -23,10 +23,12 @@ func main() {
 		fmt.Println("Failed to bind to port ", *port)
 		os.Exit(1)
 	}
-
+	roleCreated := tools.MASTER_ROLE
 	if *role != tools.MASTER_ROLE {
 		go serverhelpers.SendHandshakePing(tools.MasterPortGetter(), tools.MasterHostGetter())
+		roleCreated = tools.SLAVE_ROLE
 	}
+	tools.InitServerConfig(int64(*port), tools.MasterHostGetter(), roleCreated)
 
 	defer serve.Close()
 

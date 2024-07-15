@@ -49,13 +49,19 @@ func RedisCommands(command string, args tools.Array, role string) string {
 		}
 	case "REPLCONF":
 		{
-			message := tools.SimpleString("OK").Encode()
+			message, err := ReplConfCommand(args)
+			if err != nil {
+				return fmt.Sprintf("-ERR Invalid Operation %v%s", command, tools.CLRF)
+			}
 			return message
 		}
 
 	case "PSYNC":
 		{
-			message := tools.SimpleString("FULLRESYNC <REPL_ID> 0").Encode()
+			message, err := PsyncConfCommand(args)
+			if err != nil {
+				return fmt.Sprintf("-ERR Invalid Operation %v%s", command, tools.CLRF)
+			}
 			return message
 		}
 	default:

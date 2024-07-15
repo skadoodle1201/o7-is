@@ -10,4 +10,4 @@ module github.com/codecrafters-io/redis-starter-go
 
 go 1.22
 
-require golang.org/x/text v0.16.0
+require github.com/google/uuid v1.6.0
