@@ -44,7 +44,6 @@ func SetCommand(args tools.Array) (string, error) {
 		exVal, okExVal := args[3].(tools.BulkString)
 		if !okTypeEx || !okExVal {
 			fmt.Println("\n Failed at Time \n", len(args))
-
 			err = fmt.Errorf("Incorrect Input :: %v %v", args[2], args[3])
 			return message, err
 		}
@@ -93,17 +92,15 @@ func GetCommand(args tools.Array) (string, error) {
 	SetStoreMux.RLock()
 	val, ok := SetStore[key.Value]
 	if !ok {
-		message = "$-1\r\n"
+		message = fmt.Sprintf("$-1%s", tools.CLRF)
 		return message, err
 	}
 	now := time.Now()
 	fmt.Println("IS ZERO:: ", val.expiry.IsZero())
 	if !val.expiry.IsZero() && now.After(val.expiry) {
 		fmt.Printf("\n %v %v \n", now.After(val.expiry), val.expiry)
-
 		delete(SetStore, key.Value)
-		message = "$-1\r\n"
-
+		message = fmt.Sprintf("$-1%s", tools.CLRF)
 		return message, err
 	}
 	SetStoreMux.RUnlock()

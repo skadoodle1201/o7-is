@@ -12,13 +12,13 @@ func RedisCommands(command string, args tools.Array) string {
 	switch command {
 	case "PING":
 		{
-			return fmt.Sprintf("+PONG\r\n")
+			return fmt.Sprintf("+PONG%s", tools.CLRF)
 		}
 	case "ECHO":
 		{
 			message, err := EchoCommand(args)
 			if err != nil {
-				return fmt.Sprintf("Invalid Operation %v", command)
+				return fmt.Sprintf("-ERR Invalid Operation %v%s", command, tools.CLRF)
 			}
 			return message
 		}
@@ -26,7 +26,7 @@ func RedisCommands(command string, args tools.Array) string {
 		{
 			message, err := SetCommand(args)
 			if err != nil {
-				return fmt.Sprintf("Invalid Operation %v", command)
+				return fmt.Sprintf("-ERR Invalid Operation %v%s", command, tools.CLRF)
 			}
 			return message
 		}
@@ -34,13 +34,22 @@ func RedisCommands(command string, args tools.Array) string {
 		{
 			message, err := GetCommand(args)
 			if err != nil {
-				return fmt.Sprintf("Invalid Operation %v", command)
+				return fmt.Sprintf("-ERR Invalid Operation %v%s", command, tools.CLRF)
 			}
 			return message
 		}
+	case "INFO":
+		{
+			message, err := InfoCommand(args)
+			if err != nil {
+				return fmt.Sprintf("-ERR Invalid Operation %v%s", command, tools.CLRF)
+			}
+			return message
+
+		}
 	default:
 		{
-			return fmt.Sprintf("+PONG\r\n")
+			return fmt.Sprintf("-ERR Invalid Operation %v%s", command, tools.CLRF)
 		}
 	}
 }

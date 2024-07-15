@@ -8,3 +8,5 @@ type BulkString struct {
 }
 type SimpleString string
 type Integer int
+
+type RedisBulkString string

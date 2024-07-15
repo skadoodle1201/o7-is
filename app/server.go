@@ -48,7 +48,6 @@ func handleConnection(conn net.Conn) (err error) {
 		// Print the received message
 		readBuf := buf[:count]
 		parsedData, data, err := tools.Parse(readBuf)
-		// fmt.Print("Message received:", parsedData)
 		if len(data) != 0 {
 			return fmt.Errorf("not all data are processed, data left: %b", data)
 		}
