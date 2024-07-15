@@ -11,6 +11,16 @@ import (
 	"github.com/codecrafters-io/redis-starter-go/internal/tools"
 )
 
+type ServerConfig struct {
+	port     int64
+	hostName string
+}
+
+var masterServerConf = ServerConfig{
+	port:     6379,
+	hostName: "0.0.0.0",
+}
+
 func main() {
 	fmt.Println("Logs from your program will appear here!")
 	port := flag.Int("port", 6379, "The port on which the Redis server listens")
@@ -20,6 +30,10 @@ func main() {
 	if err != nil {
 		fmt.Println("Failed to bind to port ", *port)
 		os.Exit(1)
+	}
+
+	if *role != "master" {
+		SendHandshake(masterServerConf)
 	}
 
 	defer serve.Close()
@@ -73,4 +87,14 @@ func handleConnection(conn net.Conn, role string) (err error) {
 		}
 	}
 
+}
+
+func SendHandshake(serverConfig ServerConfig) (err error) {
+	address := fmt.Sprintf("%s:%d", serverConfig.hostName, serverConfig.port)
+	conn, err := net.Dial("tcp", address)
+	if err != nil {
+		return fmt.Errorf("Error HandShake With Master")
+	}
+	_, err = conn.Write([]byte("*1\r\n$4\r\nping\r\n"))
+	return err
 }
