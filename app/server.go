@@ -14,6 +14,7 @@ import (
 func main() {
 	fmt.Println("Logs from your program will appear here!")
 	port := flag.Int("port", 6379, "The port on which the Redis server listens")
+	role := flag.String("replicaof", "master", "The role redis server is running on")
 	flag.Parse()
 	serve, err := net.Listen("tcp", "0.0.0.0:"+strconv.Itoa(*port))
 	if err != nil {
@@ -32,12 +33,12 @@ func main() {
 			continue
 		}
 
-		go handleConnection(conn)
+		go handleConnection(conn, *role)
 	}
 
 }
 
-func handleConnection(conn net.Conn) (err error) {
+func handleConnection(conn net.Conn, role string) (err error) {
 	defer conn.Close()
 	var buf = make([]byte, 128)
 	for {
@@ -65,7 +66,7 @@ func handleConnection(conn net.Conn) (err error) {
 		}
 		fmt.Printf("Processing %s operation with following args %+v", operation.Value, args)
 
-		resMessage := commands.RedisCommands(operation.Value, args)
+		resMessage := commands.RedisCommands(operation.Value, args, role)
 		_, err = conn.Write([]byte(resMessage))
 		if err != nil {
 			return fmt.Errorf("Error writing: %v", err.Error())
