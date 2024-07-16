@@ -76,9 +76,11 @@ func SetCommand(args tools.Array) (string, error) {
 
 	message = tools.SimpleString("OK").Encode()
 	replicaConn := tools.GetReplicaConns()
+	fmt.Println("Length Of Replica", len(replicaConn))
 	if len(replicaConn) > 0 {
 		for _, conn := range replicaConn {
-			go serverhelpers.SendSetCommandToReplica(conn, key.Value, value.Value)
+			fmt.Println("In Comnn")
+			serverhelpers.SendSetCommandToReplica(conn, key.Value, value.Value)
 		}
 	}
 	return message, err
