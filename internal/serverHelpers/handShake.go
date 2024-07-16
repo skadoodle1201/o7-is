@@ -46,3 +46,13 @@ func SendHandshakePing(serverPort int64, serverHostName string) (err error) {
 
 	return err
 }
+
+func SendSetCommandToReplica(conn net.Conn, key string, val string) {
+	sendSetCommand := fmt.Sprintf("*3%s%s%s%s",
+		tools.CLRF,
+		tools.RedisBulkString("SET").Encode(),
+		tools.RedisBulkString(key).Encode(),
+		tools.RedisBulkString(val).Encode(),
+	)
+	conn.Write([]byte(sendSetCommand))
+}

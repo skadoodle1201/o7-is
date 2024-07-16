@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	serverhelpers "github.com/codecrafters-io/redis-starter-go/internal/serverHelpers"
 	"github.com/codecrafters-io/redis-starter-go/internal/tools"
 )
 
@@ -74,6 +75,12 @@ func SetCommand(args tools.Array) (string, error) {
 	SetStoreMux.Unlock()
 
 	message = tools.SimpleString("OK").Encode()
+	replicaConn := tools.GetReplicaConns()
+	if len(replicaConn) > 0 {
+		for _, conn := range replicaConn {
+			go serverhelpers.SendSetCommandToReplica(conn, key.Value, value.Value)
+		}
+	}
 	return message, err
 }
 

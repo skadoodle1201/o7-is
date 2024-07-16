@@ -3,6 +3,7 @@ package tools
 import (
 	"crypto/sha1"
 	"fmt"
+	"net"
 
 	"github.com/google/uuid"
 )
@@ -14,6 +15,7 @@ type ServerConfig struct {
 	hostName string
 	id       string
 	role     string
+	replicas []net.Conn
 }
 
 var activeServerConf ServerConfig
@@ -28,6 +30,7 @@ func InitServerConfig(port int64, hostName string, role string) {
 		hostName: hostName,
 		id:       sha1Hash,
 		role:     role,
+		replicas: []net.Conn{},
 	}
 }
 
@@ -50,4 +53,12 @@ func MasterPortGetter() int64 {
 
 func MasterHostGetter() string {
 	return masterServerConf.hostName
+}
+
+func AppendNewReplicaConn(conn net.Conn) {
+	activeServerConf.replicas = append(activeServerConf.replicas, conn)
+}
+
+func GetReplicaConns() (replicaConn []net.Conn) {
+	return activeServerConf.replicas
 }
