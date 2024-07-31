@@ -77,7 +77,7 @@ func SetCommand(args tools.Array) (string, error) {
 	message = tools.SimpleString("OK").Encode()
 	replicaConn := tools.GetReplicaConns()
 	fmt.Println("Length Of Replica", len(replicaConn))
-	if len(replicaConn) > 0 {
+	if len(replicaConn) > 0 && tools.GetActiverServerRole() == tools.MASTER_ROLE {
 		for _, conn := range replicaConn {
 			fmt.Println("In Comnn")
 			serverhelpers.SendSetCommandToReplica(conn, key.Value, value.Value)
@@ -90,12 +90,12 @@ func GetCommand(args tools.Array) (string, error) {
 	var err error
 	var message string
 	if len(args) > 1 {
-		err = fmt.Errorf("Incorrect Input :: %v", args)
+		err = fmt.Errorf("incorrect Input :: %v", args)
 		return message, err
 	}
 	key, okKey := args[0].(tools.BulkString)
 	if !okKey {
-		err = fmt.Errorf("Incorrect Input :: %v", args[0])
+		err = fmt.Errorf("incorrect Input :: %v", args[0])
 		return message, err
 	}
 	SetStoreMux.RLock()

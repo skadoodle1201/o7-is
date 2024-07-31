@@ -62,3 +62,7 @@ func AppendNewReplicaConn(conn net.Conn) {
 func GetReplicaConns() (replicaConn []net.Conn) {
 	return activeServerConf.replicas
 }
+
+func GetActiverServerRole() string {
+	return activeServerConf.role
+}

@@ -9,6 +9,7 @@ import (
 
 func RedisCommands(command string, args tools.Array, role string) string {
 	command = strings.ToUpper(command)
+	fmt.Println(command, args)
 	switch command {
 	case "PING":
 		{

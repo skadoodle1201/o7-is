@@ -1,6 +1,8 @@
 package tools
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func Parse(data []byte) (interface{}, []byte, error) {
 	dataType := data[0]
@@ -19,8 +21,10 @@ func Parse(data []byte) (interface{}, []byte, error) {
 	case ':':
 		parsingType = "Integer"
 		parsed, data, err = ParseInteger(data)
+	case '+':
+		return nil, data, nil
 	default:
-		return nil, data, fmt.Errorf("unknown data type %b", dataType)
+		return nil, data, fmt.Errorf("unknown data type %v", string(dataType))
 	}
 	if err != nil {
 		return nil, data, fmt.Errorf("parsing type %s: %w", parsingType, err)

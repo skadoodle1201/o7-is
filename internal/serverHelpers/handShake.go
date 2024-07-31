@@ -9,15 +9,12 @@ import (
 	"github.com/codecrafters-io/redis-starter-go/internal/tools"
 )
 
-func SendHandshakePing(serverPort int64, serverHostName string) (err error) {
-	address := fmt.Sprintf("%s:%d", serverHostName, serverPort)
-	conn, err := net.Dial("tcp", address)
-	if err != nil {
-		return fmt.Errorf("Error HandShake With Master")
-	}
-
+func SendHandshakePing(conn net.Conn) (err error) {
 	pingCommand := fmt.Sprintf("*1%s%s", tools.CLRF, tools.RedisBulkString("ping").Encode())
 	_, err = conn.Write([]byte(pingCommand))
+	if err != nil {
+		return fmt.Errorf("error handShake with master")
+	}
 	time.Sleep(1 * time.Second)
 	activePort, _ := tools.ServerPort()
 	replConfComPort := fmt.Sprintf("*3%s%s%s%s",
@@ -27,6 +24,9 @@ func SendHandshakePing(serverPort int64, serverHostName string) (err error) {
 		tools.RedisBulkString(strconv.Itoa(int(activePort))).Encode(),
 	)
 	_, err = conn.Write([]byte(replConfComPort))
+	if err != nil {
+		return fmt.Errorf("error handShake with master")
+	}
 	time.Sleep(1 * time.Second)
 	replConfComCapa := fmt.Sprintf("*3%s%s%s%s",
 		tools.CLRF,
@@ -35,6 +35,9 @@ func SendHandshakePing(serverPort int64, serverHostName string) (err error) {
 		tools.RedisBulkString("psync2").Encode(),
 	)
 	_, err = conn.Write([]byte(replConfComCapa))
+	if err != nil {
+		return fmt.Errorf("error handShake with master")
+	}
 	time.Sleep(1 * time.Second)
 	psyncConfCom := fmt.Sprintf("*3%s%s%s%s",
 		tools.CLRF,
