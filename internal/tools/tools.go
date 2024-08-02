@@ -6,6 +6,7 @@ import (
 
 func Parse(data []byte) (interface{}, []byte, error) {
 	dataType := data[0]
+	fmt.Println("dataType: ", string(data))
 	var (
 		parsingType string
 		parsed      interface{}

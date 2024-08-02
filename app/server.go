@@ -56,6 +56,7 @@ func main() {
 }
 
 func handleConnection(conn net.Conn, role string) {
+	fmt.Println("Connection accepted from: ", conn.RemoteAddr())
 	for {
 		var buf = make([]byte, 128)
 		count, err := conn.Read(buf)
@@ -67,15 +68,45 @@ func handleConnection(conn net.Conn, role string) {
 		}
 		// Print the received message
 		readBuf := buf[:count]
-		fmt.Println(string(readBuf))
 		parsedData, data, err := tools.Parse(readBuf)
 		if err != nil {
 			fmt.Println("Error parsing: ", err.Error())
 			continue
 		}
-		if len(data) != 0 {
-			fmt.Println("not all data are processed, data left: ", string(data))
+
+		if len(data) != 0 && strings.Contains(string(data), "+FULLRESYNC") || strings.Contains(string(data), "+OK") {
 			continue
+		}
+		if len(data) != 0 {
+			p, d, _ := tools.Parse(data)
+			fmt.Println("data: ", string(data))
+			if len(d) != 0 {
+				fmt.Println("not all data are processed, data left: ", string(d))
+				continue
+			}
+			a, ok := p.(tools.Array)
+			if !ok {
+				fmt.Println("parsed command data should be array")
+				continue
+			}
+			operation, ok := a[0].(tools.BulkString)
+			if !ok {
+				fmt.Println("operation item should be string: ", a[0])
+				continue
+			}
+			args := tools.Array{}
+			if len(a) > 1 {
+				args = a[1:]
+			}
+			fmt.Printf("Processing %s operation with following args %+v", operation.Value, args)
+
+			resMessage := commands.RedisCommands(operation.Value, args, role)
+			_, err = conn.Write([]byte(resMessage))
+
+			if err != nil {
+				fmt.Printf("Error writing: %v", err.Error())
+				continue
+			}
 		}
 		arr, ok := parsedData.(tools.Array)
 		if !ok {
@@ -89,9 +120,17 @@ func handleConnection(conn net.Conn, role string) {
 		}
 		if operation.Value == "PSYNC" {
 			tools.AppendNewReplicaConn(conn)
-			var emptyRDB, _ = hex.DecodeString("524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2")
-			emptyRDB = append(emptyRDB, []byte("\r\n")...)
-			_, rdbFileErr := conn.Write(append([]byte(fmt.Sprintf("$%d\r\n", len(emptyRDB))), emptyRDB...))
+			fmt.Println("PSYNC received")
+			dataToSend := "+FULLRESYNC " + tools.ServerUUID() + " 0\r\n"
+			_, err := conn.Write([]byte(dataToSend))
+			if err != nil {
+				fmt.Println("Error writing:", err.Error())
+			}
+			rdbHex := "524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2"
+			rdbBytes, _ := hex.DecodeString(rdbHex)
+
+			dataToSend = "$" + strconv.Itoa(len(rdbBytes)) + "\r\n" + string(rdbBytes)
+			_, rdbFileErr := conn.Write([]byte(dataToSend))
 			if rdbFileErr != nil {
 				fmt.Printf("Error writing: %v", rdbFileErr.Error())
 				continue
@@ -130,21 +169,26 @@ func spwanServer(port int, role string, replicaOf string) {
 	if role == tools.SLAVE_ROLE {
 		masterConn := masterConn(replicaOf)
 		serverhelpers.SendHandshakePing(masterConn)
+
 		go handleConnection(masterConn, tools.MASTER_ROLE)
 	}
+
 	for {
 		conn, err := serve.Accept()
+
 		if err != nil {
 			fmt.Println(err.Error())
-			continue
+			os.Exit(1)
 		}
 		go handleConnection(conn, role)
 	}
 }
 
 func masterConn(replicaOf string) (masterConn net.Conn) {
-	hostM, portM := splitHostPort(replicaOf)
-	masterConn, err := net.Dial("tcp", hostM+":"+portM)
+	fmt.Println("Server starting role: ", replicaOf)
+
+	_, portM := splitHostPort(replicaOf)
+	masterConn, err := net.Dial("tcp", tools.MasterHostGetter()+":"+portM)
 	if err != nil {
 		fmt.Println("Master connection failed Already running on port ", portM)
 		os.Exit(1)

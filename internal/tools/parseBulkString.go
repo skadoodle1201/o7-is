@@ -17,6 +17,7 @@ func ParseBulkString(data []byte) (BulkString, []byte, error) {
 	}
 	data = data[1:]
 	bulkStrData := bytes.SplitN(data, []byte(CLRF), 2)
+
 	if len(bulkStrData) != 2 {
 		return bulkString, data, errors.New("bulk string needs start delimiter")
 	}
@@ -29,6 +30,7 @@ func ParseBulkString(data []byte) (BulkString, []byte, error) {
 		bulkString.IsNull = true
 		return bulkString, data, nil
 	}
+	fmt.Println("data: IN BULK STRING", string(data))
 	bulkStrData = bytes.SplitN(data, []byte(CLRF), 2)
 	if len(bulkStrData) != 2 {
 		return bulkString, data, errors.New("bulk string needs end delimiter")
