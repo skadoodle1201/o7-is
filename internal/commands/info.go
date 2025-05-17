@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	"github.com/codecrafters-io/redis-starter-go/internal/tools"
+	"github.com/skadoodle1201/o7-is/internal/tools"
 )
 
 func InfoCommand(args tools.Array, role string) (message string, err error) {

@@ -11,9 +11,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/codecrafters-io/redis-starter-go/internal/commands"
-	serverhelpers "github.com/codecrafters-io/redis-starter-go/internal/serverHelpers"
-	"github.com/codecrafters-io/redis-starter-go/internal/tools"
+	"github.com/skadoodle1201/o7-is/internal/commands"
+	serverhelpers "github.com/skadoodle1201/o7-is/internal/serverHelpers"
+	"github.com/skadoodle1201/o7-is/internal/tools"
 )
 
 func main() {

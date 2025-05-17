@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/codecrafters-io/redis-starter-go/internal/tools"
+	"github.com/skadoodle1201/o7-is/internal/tools"
 )
 
 func SendHandshakePing(conn net.Conn) (err error) {

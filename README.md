@@ -1,34 +1,87 @@
-[![progress-banner](https://backend.codecrafters.io/progress/redis/8f97ffda-db5c-453b-ab50-7c281d303505)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# 🟥 o7-is: A Redis Clone in Go
 
-This is a starting point for Go solutions to the
-["Build Your Own Redis" Challenge](https://codecrafters.io/challenges/redis).
+A lightweight Redis clone implemented in Go, capable of handling basic Redis commands, RESP parsing, master-replica replication, and RDB file serving.
 
-In this challenge, you'll build a toy Redis clone that's capable of handling
-basic commands like `PING`, `SET` and `GET`. Along the way we'll learn about
-event loops, the Redis protocol and more.
+---
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+## 🚀 Features
 
-# Passing the first stage
+- Minimal Redis-compatible server built in Go
+- RESP protocol parser
+- Basic command handling (GET, SET, etc.)
+- Master-Slave replication with `PSYNC` support
+- Embedded RDB snapshot serving
+- Easy command registration and extension
 
-The entry point for your Redis implementation is in `app/server.go`. Study and
-uncomment the relevant code, and push your changes to pass the first stage:
+---
 
-```sh
-git add .
-git commit -m "pass 1st stage" # any msg
-git push origin master
+## 📁 Project Structure
+
+o7-is/
+│
+├── app/ # Entry point for the Redis server (main.go)
+├── internal/
+│ ├── commands/ # Command handlers (GET, SET, etc.)
+│ ├── serverHelpers/ # Replication helpers and handshake logic
+│ ├── tools/ # RESP parser, config utilities, state management
+├── go.mod / go.sum
+├── README.md
+
+
+---
+
+## 🛠️ How It Works
+
+- The server listens on a specified port using the RESP protocol.
+- It parses client requests and dispatches them to appropriate handlers.
+- If run with `--replicaof`, it will:
+  - Connect to the master,
+  - Perform handshake,
+  - Receive and process RDB file,
+  - Sync data and keep connection alive for future updates.
+
+---
+
+## 🧪 Supported Commands
+
+- `PING`
+- `ECHO`
+- `SET`
+- `GET`
+- `INFO`
+- `REPLCONF`
+- `PSYNC`
+
+_(More commands can be added by editing the `internal/commands` package.)_
+
+---
+
+## ⚙️ Usage
+
+### 🖥 Start as Master
+
+```bash
+go run app/main.go --port 6379
+
 ```
 
-That's all!
 
-# Stage 2 & beyond
+### 🖥 Start as Replica
 
-Note: This section is for stages 2 and beyond.
+The replica connects to the master, performs PSYNC, and syncs the RDB dump.
 
-1. Ensure you have `go (1.19)` installed locally
-1. Run `./spawn_redis_server.sh` to run your Redis server, which is implemented
-   in `app/server.go`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+```bash
+go run app/main.go --port 6380 --replicaof 127.0.0.1 6379
+
+```
+
+## 🧹 TODO / Improvements
+- 🧠**Add support for more data types currently only supporting strings**
+- ✅ **Basic master-replica setup**
+- ⚙️ **Implement `SYNC` and real-time data propagation**
+- ➕ **Add support for more Redis commands**  _(e.g., `DEL`, `EXPIRE`, `INCR`, etc.)_
+- 🫡 **Implement eviction policies**  _(like LRU / TTL-based cleanup)_
+- 💾 **Add persistence support**  _(support for RDB and AOF)_
+- ⏱ **Handle data expiration and TTL**
+- 🔒 **Add concurrency-safe data structures**  _(and improve locking mechanisms)_
+- 📊 **Add benchmarking**  _(and compare performance with real Redis)_

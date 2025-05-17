@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	serverhelpers "github.com/codecrafters-io/redis-starter-go/internal/serverHelpers"
-	"github.com/codecrafters-io/redis-starter-go/internal/tools"
+	serverhelpers "github.com/skadoodle1201/o7-is/internal/serverHelpers"
+	"github.com/skadoodle1201/o7-is/internal/tools"
 )
 
 type DataStore struct {

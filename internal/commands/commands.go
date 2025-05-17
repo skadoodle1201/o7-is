@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/codecrafters-io/redis-starter-go/internal/tools"
+	"github.com/skadoodle1201/o7-is/internal/tools"
 )
 
 func RedisCommands(command string, args tools.Array, role string) string {

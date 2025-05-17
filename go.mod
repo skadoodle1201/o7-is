@@ -6,7 +6,7 @@
 //
 // DON'T EDIT THIS!
 
-module github.com/codecrafters-io/redis-starter-go
+module github.com/skadoodle1201/o7-is
 
 go 1.22
 
