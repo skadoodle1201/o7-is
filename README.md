@@ -85,3 +85,24 @@ go run app/main.go --port 6380 --replicaof 127.0.0.1 6379
 - ⏱ **Handle data expiration and TTL**
 - 🔒 **Add concurrency-safe data structures**  _(and improve locking mechanisms)_
 - 📊 **Add benchmarking**  _(and compare performance with real Redis)_
+
+
+## 🔨 Build
+
+To build the Redis clone binary:
+
+```bash
+go build -o o7-redis ./app
+
+./o7-redis --port 6379
+
+```
+
+## 🧪 Testing with redis-cli
+
+You can use the official `redis-cli` to connect and test your Redis clone:
+
+```bash
+redis-cli -p 6379
+
+```
